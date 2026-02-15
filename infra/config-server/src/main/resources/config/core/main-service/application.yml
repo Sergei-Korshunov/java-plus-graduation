@@ -14,11 +14,11 @@ spring:
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://localhost:6432/ewm
-    username: ewm
-    password: ewm
+    username: sergei
+    password: 12345
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:

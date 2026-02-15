@@ -1,0 +1,36 @@
+package ru.practicum.event.service;
+
+import jakarta.servlet.http.HttpServletRequest;
+import ru.practicum.event.model.Event;
+import ru.practicum.interactionapi.event.event.dto.*;
+
+import java.util.List;
+
+public interface EventService {
+
+    EventFullDto createEvent(Long userId, NewEventDto newEventDto);
+
+    List<EventShortDto> findEventByUserId(Long userId, int from, int size);
+
+    EventFullDto findEventByIdAndEventId(Long userId, Long eventId);
+
+    EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
+
+    EventFullDto getEventById(Long eventId);
+
+    EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequestDto updateEventAdminRequestDto);
+
+    void updateConfirmedRequest(Long eventId, EventFullDto eventFullDto);
+
+    List<EventFullDto> findEventByParamsAdmin(EventAdminParamDto eventParamDto);
+
+    List<EventShortDto> findEventByParamsPublic(EventPublicParamsDto eventPublicParamsDto, HttpServletRequest request);
+
+    EventFullDto findPublicEventById(Long eventId, HttpServletRequest request);
+
+    Event findEventWithOutDto(Long userId, Long eventId);
+
+    void saveEventWithRequest(Event event);
+
+    List<Event> findEventsByids(List<Long> eventsIds);
+}
