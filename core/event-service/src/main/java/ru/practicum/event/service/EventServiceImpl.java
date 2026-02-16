@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-//?
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
@@ -155,7 +154,8 @@ public class EventServiceImpl implements EventService {
     public void updateConfirmedRequest(Long eventId, EventFullDto eventFullDto) {
         Event event = findEventById(eventId);
         if (eventFullDto.getConfirmedRequests() == null || eventFullDto.getConfirmedRequests() < 0) {
-            throw new IllegalArgumentException("Некорректное поле - \"confirmedRequests\"." + eventFullDto);
+            throw new IllegalArgumentException(String.format("Некорректное поле - \"confirmedRequests\", значение: %d",
+                    eventFullDto.getConfirmedRequests()));
         }
 
         event.setConfirmedRequests(eventFullDto.getConfirmedRequests());

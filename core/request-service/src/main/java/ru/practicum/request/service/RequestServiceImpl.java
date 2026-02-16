@@ -42,6 +42,7 @@ public class RequestServiceImpl implements RequestService {
     public RequestDTO addRequestCurrentUser(Long userId, Long eventId) {
         UserDto user = userClient.getUserById(userId);
         EventFullDto event = adminEventClient.getEventById(eventId);
+        Long confirmedRequests = event.getConfirmedRequests();
 
         if (requestRepository.existsByRequesterIdAndEventId(userId, eventId))
             throw new ConflictException("Данный запрос существует.");
@@ -52,11 +53,9 @@ public class RequestServiceImpl implements RequestService {
         if (!event.getState().equals(StateEvent.PUBLISHED))
             throw new ConflictException("Нельзя участвовать в неопубликованном событии.");
 
-        if (event.getParticipantLimit() != 0 && event.getParticipantLimit().equals(event.getConfirmedRequests())) {
+        if (event.getParticipantLimit() != 0 && event.getParticipantLimit().equals(confirmedRequests)) {
             throw new ConflictException("У события достигнут лимит запросов на участие.");
         }
-
-        Long confirmedRequests = event.getConfirmedRequests();
 
         Request request = new Request();
         request.setCreated(LocalDateTime.now());

@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.service.EventService;
 import ru.practicum.event.service.EventWithRequest;
+import ru.practicum.interactionapi.event.event.client.PrivateEventClient;
 import ru.practicum.interactionapi.event.event.dto.*;
 import ru.practicum.interactionapi.request.dto.RequestDTO;
 
@@ -19,19 +20,21 @@ import java.util.List;
 @RequestMapping(path = "/users/{userId}/events")
 @RequiredArgsConstructor
 @Validated
-public class PrivateEventController {
+public class PrivateEventController implements PrivateEventClient {
 
     private final EventService eventService;
     private final EventWithRequest eventWithRequest;
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
+    @Override
     public EventFullDto createEvent(@PathVariable @Positive @NotNull Long userId,
                                     @RequestBody @Valid NewEventDto newEventDto) {
         return eventService.createEvent(userId, newEventDto);
     }
 
     @GetMapping
+    @Override
     public List<EventShortDto> findEventsByUserId(@PathVariable @Positive @NotNull Long userId,
                                                   @PositiveOrZero @RequestParam(defaultValue = "0") int from,
                                                   @Positive @RequestParam(defaultValue = "10") int size) {
@@ -39,12 +42,14 @@ public class PrivateEventController {
     }
 
     @GetMapping("/{eventId}")
+    @Override
     public EventFullDto findEventById(@PathVariable @Positive @NotNull Long userId,
                                       @PathVariable @Positive @NotNull Long eventId) {
         return eventService.findEventByIdAndEventId(userId, eventId);
     }
 
     @PatchMapping("/{eventId}")
+    @Override
     public EventFullDto updateEvent(@PathVariable @Positive @NotNull Long userId,
                                     @PathVariable @Positive @NotNull Long eventId,
                                     @RequestBody @Valid UpdateEventUserRequest updateEventUserRequest) {
@@ -52,6 +57,7 @@ public class PrivateEventController {
     }
 
     @PatchMapping("/{eventId}/requests")
+    @Override
     public EventRequestStatusUpdateResult updateRequestUser(@PathVariable @Positive @NotNull Long userId,
                                                             @PathVariable @Positive @NotNull Long eventId,
                                                             @RequestBody @Valid EventRequestStatusUpdateRequest request) {
@@ -59,6 +65,7 @@ public class PrivateEventController {
     }
 
     @GetMapping("/{eventId}/requests")
+    @Override
     public List<RequestDTO> getEventRequest(@PathVariable @Positive @NotNull Long userId,
                                             @PathVariable @Positive @NotNull Long eventId) {
         return eventWithRequest.getEventRequest(userId, eventId);

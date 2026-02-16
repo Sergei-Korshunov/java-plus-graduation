@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.interactionapi.request.client.PublicRequestClient;
 import ru.practicum.interactionapi.request.dto.RequestDTO;
 import ru.practicum.request.service.RequestService;
 
@@ -14,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users/{userId}/requests")
 @Validated
-public class RequestController {
+public class RequestController implements PublicRequestClient {
 
     private final RequestService requestService;
 
@@ -25,6 +26,7 @@ public class RequestController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public RequestDTO addRequestCurrentUser(@Positive @PathVariable Long userId,
                                             @RequestParam @NotNull @Positive Long eventId) {
         return requestService.addRequestCurrentUser(userId, eventId);
@@ -32,12 +34,14 @@ public class RequestController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @Override
     public List<RequestDTO> getRequestsCurrentUser(@Positive @PathVariable Long userId) {
         return requestService.getRequestsCurrentUser(userId);
     }
 
     @PatchMapping("/{requestId}/cancel")
     @ResponseStatus(HttpStatus.OK)
+    @Override
     public RequestDTO cancelRequestCurrentUser(@Positive @PathVariable Long userId, @Positive @PathVariable Long requestId) {
         return requestService.cancelRequestCurrentUser(userId, requestId);
     }

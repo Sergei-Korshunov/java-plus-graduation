@@ -20,7 +20,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-//?
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
 
@@ -52,7 +51,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
             Where e.id in(:eventsId)
             """)
     List<Event> findEventsByIds(@Param("eventsId") List<Long> eventsId);
-
 
     interface PredicatesForParamAdmin {
         static BooleanBuilder build(EventAdminParamDto eventParamDto) {

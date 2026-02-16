@@ -31,13 +31,11 @@ public class EventWithRequestImpl implements EventWithRequest {
                                                             EventRequestStatusUpdateRequest request) {
         userClient.getUserById(userId);
         Event event = eventService.findEventWithOutDto(userId, eventId);
-        System.out.println("Event Before: " + event);
+
         List<RequestDTO> requestList = privateRequestClient.findRequestsByIds(request.getRequestIds());
         List<RequestDTO> confirmedRequests = new ArrayList<>();
         List<RequestDTO> rejectedRequests = new ArrayList<>();
 
-        System.out.println("request " + request.getRequestIds());
-        System.out.println("request List" + requestList);
         if (Objects.equals(event.getConfirmedRequests(), event.getParticipantLimit()) &&
                 request.getStatus().equals(RequestStatus.CONFIRMED)) {
             throw new ConflictException("У события достигнут лимит запросов на участие.");
@@ -83,10 +81,7 @@ public class EventWithRequestImpl implements EventWithRequest {
         allRequest.addAll(confirmedRequests);
         allRequest.addAll(rejectedRequests);
 
-        System.out.println("RequestDTO All " + allRequest);
         privateRequestClient.saveRequestList(allRequest);
-
-        System.out.println("Event After: " + event);
         eventService.saveEventWithRequest(event);
 
         return EventRequestStatusUpdateResult.builder()

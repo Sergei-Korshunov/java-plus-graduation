@@ -22,7 +22,6 @@ public interface EventMapper {
     @Mapping(source = "location", target = "location")
     Event toEvent(NewEventDto newEventDto, Long userId, Category category, Location location);
 
-
     @Named("event")
     @AfterMapping
     default void setDefaultCreatedOn(@MappingTarget Event.EventBuilder event) {

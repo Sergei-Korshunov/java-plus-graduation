@@ -1,5 +1,7 @@
 package ru.practicum.interactionapi.user.client;
 
+import feign.FeignException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -16,17 +18,22 @@ public interface UserClient {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    UserDto registerUser(@Valid @RequestBody NewUserRequest req);
+    UserDto registerUser(@Valid @RequestBody NewUserRequest req) throws FeignException;
 
     @GetMapping
     List<UserDto> getUsers(@RequestParam(required = false) List<Long> ids,
-                                  @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                  @Positive @RequestParam(defaultValue = "10") int size);
+                           @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+                           @Positive @RequestParam(defaultValue = "10") int size) throws FeignException;
 
+    @CircuitBreaker(name = "defaultCircuitBreaker", fallbackMethod = "getUserByIdFallback")
     @GetMapping("/{userId}")
-    UserDto getUserById(@PathVariable Long userId);
+    UserDto getUserById(@PathVariable Long userId) throws FeignException;
 
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void delete(@PathVariable long userId);
+    void delete(@PathVariable long userId) throws FeignException;
+
+    default UserDto getUserByIdFallback(Long userId, Throwable throwable) {
+        return new UserDto();
+    }
 }

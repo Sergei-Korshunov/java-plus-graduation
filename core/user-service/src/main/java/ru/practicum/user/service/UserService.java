@@ -2,7 +2,6 @@ package ru.practicum.user.service;
 
 import ru.practicum.interactionapi.user.dto.NewUserRequest;
 import ru.practicum.interactionapi.user.dto.UserDto;
-import ru.practicum.user.model.User;
 
 import java.util.List;
 

@@ -45,4 +45,3 @@ public class AdminUserController implements UserClient {
         service.delete(userId);
     }
 }
-

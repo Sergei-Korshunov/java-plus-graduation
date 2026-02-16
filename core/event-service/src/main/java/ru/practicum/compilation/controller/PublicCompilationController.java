@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.compilation.service.CompilationService;
+import ru.practicum.interactionapi.event.compilation.client.PublicCompilationClient;
 import ru.practicum.interactionapi.event.compilation.dto.CompilationDTO;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/compilations")
 @Validated
-public class PublicCompilationController {
+public class PublicCompilationController implements PublicCompilationClient {
 
     private final CompilationService compilationService;
 
@@ -25,6 +26,7 @@ public class PublicCompilationController {
 
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
+    @Override
     public List<CompilationDTO> getCompilationsList(
             @RequestParam(defaultValue = "false") Boolean pinned,
             @RequestParam(defaultValue = "0") Integer from,
@@ -34,6 +36,7 @@ public class PublicCompilationController {
 
     @GetMapping("/{compId}")
     @ResponseStatus(value = HttpStatus.OK)
+    @Override
     public CompilationDTO getCompilationById(@PathVariable @NotNull @Positive Long compId) {
         return compilationService.getCompilationById(compId);
     }

@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.service.EventService;
+import ru.practicum.interactionapi.event.event.client.PublicEventClient;
 import ru.practicum.interactionapi.event.event.dto.EventFullDto;
 import ru.practicum.interactionapi.event.event.dto.EventPublicParamsDto;
 import ru.practicum.interactionapi.event.event.dto.EventShortDto;
@@ -20,11 +21,12 @@ import java.util.List;
 @RequestMapping(path = "/events")
 @RequiredArgsConstructor
 @Validated
-public class PublicEventController {
+public class PublicEventController implements PublicEventClient {
 
     private final EventService eventService;
 
     @GetMapping
+    @Override
     public List<EventShortDto> findEventByParamsPublic(@RequestParam(required = false) String text,
                                                        @RequestParam(required = false) List<Long> categories,
                                                        @RequestParam(required = false) Boolean paid,
@@ -50,6 +52,7 @@ public class PublicEventController {
     }
 
     @GetMapping("/{eventId}")
+    @Override
     public EventFullDto findPublicEventById(@PathVariable @Positive @NotNull Long eventId,
                                             HttpServletRequest request) {
         return eventService.findPublicEventById(eventId, request);

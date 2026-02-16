@@ -61,13 +61,14 @@
             <artifactId>spring-retry</artifactId>
         </dependency>
 
+        <!-- Interaction API -->
         <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>interaction-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
 
+        <!-- Stats Client -->
         <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>stats-client</artifactId>
@@ -149,5 +150,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

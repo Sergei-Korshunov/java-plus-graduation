@@ -25,22 +25,26 @@ public class AdminEventController implements AdminEventClient {
     private final EventService eventService;
 
     @PatchMapping("/{eventId}")
+    @Override
     public EventFullDto updateEventAdmin(@PathVariable @Positive @NotNull Long eventId,
                                          @Valid @RequestBody UpdateEventAdminRequestDto updateEventAdminRequestDto) {
         return eventService.updateEventAdmin(eventId, updateEventAdminRequestDto);
     }
 
+    @PatchMapping("/update/confirmedRequests/{eventId}")
     @Override
     public void updateConfirmedRequest(Long eventId, EventFullDto eventFullDto) {
         eventService.updateConfirmedRequest(eventId, eventFullDto);
     }
 
     @GetMapping("/{eventId}")
+    @Override
     public EventFullDto getEventById(@PathVariable @Positive Long eventId) {
         return eventService.getEventById(eventId);
     }
 
     @GetMapping
+    @Override
     public List<EventFullDto> findEventByParamsAdmin(@RequestParam(required = false) List<Long> users,
                                                      @RequestParam(required = false) List<String> state,
                                                      @RequestParam(required = false) List<Long> categories,
@@ -58,5 +62,4 @@ public class AdminEventController implements AdminEventClient {
                 .size(size)
                 .build());
     }
-
 }
