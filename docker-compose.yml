@@ -6,24 +6,9 @@ services:
     ports:
       - "6432:5432"
     environment:
-      - POSTGRES_PASSWORD=ewm
-      - POSTGRES_USER=ewm
       - POSTGRES_DB=ewm
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 10s
-      retries: 15
-
-  stats-db:
-    image: postgres:16.1
-    container_name: stats-db
-    ports:
-      - "7432:5432"
-    environment:
-      - POSTGRES_PASSWORD=stat
-      - POSTGRES_USER=stat
-      - POSTGRES_DB=stat-server
+      - POSTGRES_USER=sergei
+      - POSTGRES_PASSWORD=12345
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s

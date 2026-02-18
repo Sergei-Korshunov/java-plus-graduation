@@ -49,4 +49,3 @@ public class StatsController {
         return service.stats(from, to, uris, unique);
     }
 }
-
