@@ -1,8 +1,11 @@
 package ru.practicum.request.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.client.UserActionClient;
+import ru.practicum.ewm.stats.proto.ActionTypeProto;
 import ru.practicum.interactionapi.event.event.client.AdminEventClient;
 import ru.practicum.interactionapi.event.event.dto.EventFullDto;
 import ru.practicum.interactionapi.event.event.status.StateEvent;
@@ -16,11 +19,13 @@ import ru.practicum.request.mapper.RequestMapper;
 import ru.practicum.request.model.Request;
 import ru.practicum.request.repository.RequestRepository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Transactional(readOnly = true)
+@Slf4j
 @Service
 public class RequestServiceImpl implements RequestService {
 
@@ -28,18 +33,23 @@ public class RequestServiceImpl implements RequestService {
     private final RequestMapper requestMapper;
     private final UserClient userClient;
     private final AdminEventClient adminEventClient;
+    private final UserActionClient userActionClient;
 
     @Autowired
-    public RequestServiceImpl(RequestRepository requestRepository, RequestMapper requestMapper, UserClient userClient, AdminEventClient adminEventClient) {
+    public RequestServiceImpl(RequestRepository requestRepository, RequestMapper requestMapper, UserClient userClient,
+                              AdminEventClient adminEventClient, UserActionClient userActionClient) {
         this.requestRepository = requestRepository;
         this.requestMapper = requestMapper;
         this.userClient = userClient;
         this.adminEventClient = adminEventClient;
+        this.userActionClient = userActionClient;
     }
 
     @Transactional
     @Override
     public RequestDTO addRequestCurrentUser(Long userId, Long eventId) {
+        log.info("Добавлен запрос на событие {} для пользователя {}", eventId, userId);
+
         UserDto user = userClient.getUserById(userId);
         EventFullDto event = adminEventClient.getEventById(eventId);
         Long confirmedRequests = event.getConfirmedRequests();
@@ -79,7 +89,11 @@ public class RequestServiceImpl implements RequestService {
             adminEventClient.updateConfirmedRequest(eventId, event);
         }
 
-        return requestMapper.toRequestDTO(requestRepository.save(request));
+        userActionClient.collectUserAction(eventId, userId, ActionTypeProto.ACTION_REGISTER, Instant.now());
+        RequestDTO requestDTO = requestMapper.toRequestDTO(requestRepository.save(request));
+        log.info("Данные запроса: {}", requestDTO);
+
+        return requestDTO;
     }
 
     @Override
@@ -129,5 +143,12 @@ public class RequestServiceImpl implements RequestService {
     private Request getRequestById(Long requestId) {
         return requestRepository.findById(requestId).orElseThrow(() ->
                 new NotFoundException(String.format("Запрос с id - %d не найден.", requestId)));
+    }
+
+    @Override
+    public boolean isUserAttendedEvent(Long eventId, Long userId, RequestStatus requestStatus) {
+        userClient.getUserById(userId);
+
+        return requestRepository.existsByEventIdAndRequesterIdAndRequestStatus(eventId, userId, requestStatus);
     }
 }

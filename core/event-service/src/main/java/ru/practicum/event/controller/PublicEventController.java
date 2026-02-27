@@ -53,8 +53,19 @@ public class PublicEventController implements PublicEventClient {
 
     @GetMapping("/{eventId}")
     @Override
-    public EventFullDto findPublicEventById(@PathVariable @Positive @NotNull Long eventId,
-                                            HttpServletRequest request) {
-        return eventService.findPublicEventById(eventId, request);
+    public EventFullDto findPublicEventById(@RequestHeader("X-EWM-USER-ID") long userId, @PathVariable @Positive @NotNull Long eventId) {
+        return eventService.findPublicEventById(userId, eventId);
+    }
+
+    @GetMapping("/recommendations")
+    public List<EventFullDto> getEventsRecommendations(@RequestHeader("X-EWM-USER-ID") long userId,
+                                            @RequestParam(defaultValue = "10") int maxResults) {
+        return eventService.getEventsRecommendations(userId, maxResults);
+    }
+
+    @PutMapping("{eventId}/like")
+    public void addLike(@RequestHeader("X-EWM-USER-ID") long userId,
+                        @PathVariable @Positive @NotNull Long eventId) {
+        eventService.addLike(userId, eventId);
     }
 }

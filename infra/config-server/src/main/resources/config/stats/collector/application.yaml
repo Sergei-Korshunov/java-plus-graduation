@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: collector
+
+server:
+  port: 0
+
+grpc:
+  server:
+    port: 0
+    security:
+      enabled: false
+
+collector:
+  kafka:
+    producer:
+      properties:
+        bootstrap-servers: localhost:9092
+        key-serializer-class: org.apache.kafka.common.serialization.LongSerializer
+        value-serializer-class: ru.practicum.avro.serializer.SerializerAvro
+      topic:
+        user-action: stats.user-actions.v1
+
+logging:
+  level:
+    ru.practicum: INFO
+    org.springframework.kafka: INFO
+
