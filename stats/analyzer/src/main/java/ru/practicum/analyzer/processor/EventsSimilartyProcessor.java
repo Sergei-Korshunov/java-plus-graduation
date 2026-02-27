@@ -42,7 +42,7 @@ public class EventsSimilartyProcessor implements Runnable, Startable {
     @Override
     public void start() {
         try {
-            log.info("Подписка на топик: {}", topicEventSimilarity);
+            log.info("Подписка на топик(EventsSimilarty): {}", topicEventSimilarity);
             consumer.subscribe(List.of(topicEventSimilarity));
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 

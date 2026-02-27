@@ -22,5 +22,5 @@ public interface UserActionRepository extends JpaRepository<UserAction, Long> {
     UserAction findByEventIdAndUserId(Long eventId, Long userId);
 
     @Query("select COALESCE(SUM(ua.mark), 0) from UserAction as ua where ua.eventId = :eventId")
-    Float getSumWeightByEventId(@Param("eventId") Long eventId);
+    Double getSumWeightByEventId(@Param("eventId") Long eventId);
 }

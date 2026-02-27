@@ -1,5 +1,6 @@
 package ru.practicum.analyzer.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import ru.practicum.analyzer.repository.UserActionRepository;
 import ru.practicum.analyzer.service.interfaces.UserActionService;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 
+@Slf4j
 @Service
 public class UserActionServiceImpl implements UserActionService {
 

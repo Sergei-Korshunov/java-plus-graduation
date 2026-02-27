@@ -35,7 +35,7 @@ public class UserActionProcessor implements Startable {
     @Override
     public void start() {
         try {
-            log.info("Подписка на топик: {}", topicUserAction);
+            log.info("Подписка на топик(UserAction): {}", topicUserAction);
             consumer.subscribe(List.of(topicUserAction));
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 

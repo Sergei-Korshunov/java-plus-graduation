@@ -32,17 +32,17 @@ services:
                              --bootstrap-server kafka:29092'"
     init: true
 
-  ewm-db:
-    image: postgres:16.1
-    container_name: ewm-db
-    ports:
-      - "6432:5432"
-    environment:
-      - POSTGRES_DB=ewm
-      - POSTGRES_USER=sergei
-      - POSTGRES_PASSWORD=12345
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 10s
-      retries: 15
+#  ewm-db:
+#    image: postgres:16.1
+#    container_name: ewm-db
+#    ports:
+#      - "6432:5432"
+#    environment:
+#      - POSTGRES_DB=ewm
+#      - POSTGRES_USER=sergei
+#      - POSTGRES_PASSWORD=12345
+#    healthcheck:
+#      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+#      timeout: 5s
+#      interval: 10s
+#      retries: 15
