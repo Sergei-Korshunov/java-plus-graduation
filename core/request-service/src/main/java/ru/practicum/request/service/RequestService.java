@@ -1,6 +1,7 @@
 package ru.practicum.request.service;
 
 import ru.practicum.interactionapi.request.dto.RequestDTO;
+import ru.practicum.interactionapi.request.model.RequestStatus;
 
 import java.util.List;
 
@@ -17,4 +18,6 @@ public interface RequestService {
     void saveRequestList(List<RequestDTO> requestList);
 
     List<RequestDTO> getRequestByEventId(Long eventId);
+
+    boolean isUserAttendedEvent(Long eventId, Long userId, RequestStatus requestStatus);
 }

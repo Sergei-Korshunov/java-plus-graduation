@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: analyzer
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6432/analyzer
+    username: sergei
+    password: 12345
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+grpc:
+  server:
+    port: 0
+    security:
+      enabled: false
+
+analyzer:
+  kafka:
+    consumer:
+      user-action:
+        properties:
+          bootstrap-servers: localhost:9092
+          key-deserializer-class: org.apache.kafka.common.serialization.LongDeserializer
+          value-deserializer-class: ru.practicum.avro.deserializer.UserActionDeserializer
+          group-id: UserActionGroup.Analyzer
+          client-id: UserActionClient
+          enable-auto-commit: false
+          poll-timeout: 1000
+      events-similarity:
+        properties:
+          bootstrap-servers: localhost:9092
+          key-deserializer-class: org.apache.kafka.common.serialization.LongDeserializer
+          value-deserializer-class: ru.practicum.avro.deserializer.EventSimilarityDeserializer
+          group-id: EventSimilarityGroup
+          client-id: EventSimilarityClient
+          enable-auto-commit: false
+          poll-timeout: 1000
+      topics:
+        user-action: stats.user-actions.v1
+        events-similarity: stats.events-similarity.v1
+  weights:
+    view: 0.4
+    register: 0.8
+    like: 1.0
+
+logging:
+  level:
+    ru.practicum: TRACE
+    org.springframework.kafka: INFO

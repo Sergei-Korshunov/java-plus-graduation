@@ -71,8 +71,8 @@ public class Event {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Transient
-    private Long views;
+    @Transient // ?
+    private Double rating;
 
     @JsonIgnore
     @ToString.Exclude

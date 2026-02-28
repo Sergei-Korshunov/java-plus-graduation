@@ -16,14 +16,28 @@
 
     <modules>
         <module>stats-client</module>
-        <module>stats-dto</module>
-        <module>stats-server</module>
+        <module>aggregator</module>
+        <module>analyzer</module>
+        <module>collector</module>
+        <module>serialization</module>
+        <module>util</module>
     </modules>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <avro.version>1.11.3</avro.version>
+        <kafka-clients.version>3.6.1</kafka-clients.version>
+        <grpc-spring-boot-starter.version>3.1.0.RELEASE</grpc-spring-boot-starter.version>
+        <protobuf.version>3.23.4</protobuf.version>
+        <grpc.version>1.63.0</grpc.version>
+
+        <!--       Plugins       -->
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <avro-maven-plugin.version>${avro.version}</avro-maven-plugin.version>
+        <protobuf-plugin.version>2.4.0</protobuf-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -37,14 +51,76 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- gRPC Starter -->
+            <dependency>
+                <groupId>net.devh</groupId>
+                <artifactId>grpc-spring-boot-starter</artifactId>
+                <version>${grpc-spring-boot-starter.version}</version>
+            </dependency>
+
+            <!-- gRPC Server Starter -->
+            <dependency>
+                <groupId>net.devh</groupId>
+                <artifactId>grpc-server-spring-boot-starter</artifactId>
+                <version>${grpc-spring-boot-starter.version}</version>
+            </dependency>
+
+            <!-- Avro -->
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${avro.version}</version>
+            </dependency>
+
+            <!-- Kafka Client-->
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>${kafka-clients.version}</version>
+            </dependency>
+
             <!-- Logbook -->
             <dependency>
                 <groupId>org.zalando</groupId>
                 <artifactId>logbook-spring-boot-starter</artifactId>
                 <version>3.7.2</version>
             </dependency>
+
+            <!-- Protobuf -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+
+            <!-- Stub -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
-
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro-maven-plugin</artifactId>
+                    <version>${avro-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>io.github.ascopes</groupId>
+                    <artifactId>protobuf-maven-plugin</artifactId>
+                    <version>${protobuf-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

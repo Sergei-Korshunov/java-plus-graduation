@@ -2,40 +2,44 @@ package ru.practicum.event.service;
 
 import com.querydsl.core.BooleanBuilder;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.korshunov.statsclient.StatsClient;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
-import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.category.service.CategoryService;
+import ru.practicum.client.RecommendationsClient;
+import ru.practicum.client.UserActionClient;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.mapper.LocationMapper;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.Location;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.repository.LocationRepository;
+import ru.practicum.ewm.stats.proto.ActionTypeProto;
+import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import ru.practicum.interactionapi.event.event.dto.*;
 import ru.practicum.interactionapi.event.event.status.SortForParamPublicEvent;
 import ru.practicum.interactionapi.event.event.status.StateEvent;
 import ru.practicum.interactionapi.event.event.status.StateForUpdateEvent;
 import ru.practicum.interactionapi.exception.ConflictException;
 import ru.practicum.interactionapi.exception.NotFoundException;
+import ru.practicum.interactionapi.request.client.PrivateRequestClient;
+import ru.practicum.interactionapi.request.model.RequestStatus;
 import ru.practicum.interactionapi.user.client.UserClient;
 import ru.practicum.interactionapi.user.dto.UserDto;
 import ru.practicum.interactionapi.util.PageRequestUtil;
-import statsdto.HitDto;
-import statsdto.StatDto;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Transactional(readOnly = true)
 @Service
@@ -45,14 +49,14 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
     private final CategoryMapper categoryMapper;
     private final LocationRepository locationRepository;
     private final LocationMapper locationMapper;
     private final UserClient userClient;
-    private final StatsClient statsClient;
-
-    private final CategoryService categoryService;
+    private final PrivateRequestClient privateRequestClient;
+    private final UserActionClient userActionClient;
+    private final RecommendationsClient recommendationsClient;
 
     @Transactional
     @Override
@@ -77,8 +81,8 @@ public class EventServiceImpl implements EventService {
     public EventFullDto findEventByIdAndEventId(Long userId, Long eventId) {
         userClient.getUserById(userId);
         Event event = findEventWithOutDto(userId, eventId);
-        List<Event> eventsWithView = getStats(List.of(event), null, null, true);
-        return eventMapper.toEventFullDto(eventsWithView.getFirst());
+
+        return eventMapper.toEventFullDto(event);
     }
 
     @Transactional
@@ -105,9 +109,9 @@ public class EventServiceImpl implements EventService {
         }
         //проверка категории и локации
         Event updateEventWithCategoryAndLocation = updateCategoryAndLocation(updateEventUserRequest, event);
-        List<Event> eventWithView = getStats(List.of(updateEventWithCategoryAndLocation), null, null, true);
-        eventMapper.toUpdateEvent(updateEventUserRequest, eventWithView.getFirst());
-        return eventMapper.toEventFullDto(eventRepository.save(eventWithView.getFirst()));
+        eventMapper.toUpdateEvent(updateEventUserRequest, updateEventWithCategoryAndLocation);
+
+        return eventMapper.toEventFullDto(eventRepository.save(updateEventWithCategoryAndLocation));
     }
 
     @Override
@@ -144,9 +148,9 @@ public class EventServiceImpl implements EventService {
             }
         }
         Event updateEventWithCategoryAndLocation = updateCategoryAndLocation(updateEventAdminRequestDto, event);
-        List<Event> eventWithView = getStats(List.of(updateEventWithCategoryAndLocation), null, null, true);
-        eventMapper.toUpdateEvent(updateEventAdminRequestDto, eventWithView.getFirst());
-        return eventMapper.toEventFullDto(eventRepository.save(eventWithView.getFirst()));
+        eventMapper.toUpdateEvent(updateEventAdminRequestDto, updateEventWithCategoryAndLocation);
+
+        return eventMapper.toEventFullDto(eventRepository.save(updateEventWithCategoryAndLocation));
     }
 
     @Transactional
@@ -170,8 +174,8 @@ public class EventServiceImpl implements EventService {
                 eventParamDto.getSize(), Sort.by("id").ascending());
 
         List<Event> event = eventRepository.findAll(booleanBuilder, pageable).getContent();
-        List<Event> eventWithView = getStats(event, null, null, true);
-        return eventWithView.stream().map(eventMapper::toEventFullDto).toList();
+
+        return event.stream().map(eventMapper::toEventFullDto).toList();
     }
 
     @Override
@@ -196,9 +200,8 @@ public class EventServiceImpl implements EventService {
                 eventPublicParamsDto.getSize(), Sort.by(sort).descending());
 
         List<Event> event = eventRepository.findAll(booleanBuilder, pageable).getContent();
-        List<Event> eventWithView = getStats(event, null, null, true);
-        addViewEvent(request);
-        return eventWithView.stream().map(eventMapper::toEventShortDto).toList();
+
+        return event.stream().map(eventMapper::toEventShortDto).toList();
     }
 
     @Transactional
@@ -216,14 +219,40 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto findPublicEventById(Long eventId, HttpServletRequest request) {
+    public EventFullDto findPublicEventById(long userId, Long eventId) {
+        log.info("Найти публичное мероприятие по идентификатору {}, пользователь с id - {}", eventId, userId);
         Event event = findEventById(eventId);
         if (!event.getState().equals(StateEvent.PUBLISHED)) {
             throw new NotFoundException("Событие не доступно. Статус события: " + event.getState());
         }
-        List<Event> eventWithView = getStats(List.of(event), null, null, true);
-        addViewEvent(request);
-        return eventMapper.toEventFullDto(eventWithView.getFirst());
+
+        userActionClient.collectUserAction(eventId, userId, ActionTypeProto.ACTION_VIEW, Instant.now());
+
+        return eventMapper.toEventFullDto(event);
+    }
+
+    @Override
+    public List<EventFullDto> getEventsRecommendations(long userId, int maxResults) {
+        userClient.getUserById(userId);
+
+        Stream<RecommendedEventProto> recommendationsForUser = recommendationsClient.getRecommendationsForUser(userId, maxResults);
+        Map<Long, Double> recommendations = recommendationsForUser.collect(
+                Collectors.toMap(RecommendedEventProto::getEventId, RecommendedEventProto::getScore));
+
+        List<Event> events = eventRepository.findAllById(recommendations.keySet());
+
+        return events.stream()
+                .map(eventMapper::toEventFullDto)
+                .toList();
+    }
+
+    @Override
+    public void addLike(long userId, Long eventId) {
+        if (!privateRequestClient.isUserAttendedEvent(eventId, userId, RequestStatus.CONFIRMED)) {
+            throw new ValidationException(String.format("Пользователь с id - %d не участвовал в событии под id - %d.", userId, eventId));
+        }
+
+        userActionClient.collectUserAction(eventId, userId, ActionTypeProto.ACTION_LIKE, Instant.now());
     }
 
     @Override
@@ -237,51 +266,14 @@ public class EventServiceImpl implements EventService {
         List<Event> events = eventRepository.findEventsByIds(eventsIds);
         if (events.isEmpty()) {
             throw new NotFoundException("Events c ids - " + eventsIds + " не найдены");
-        } else {
-            return getStats(events, null, null, true);
         }
+
+        return events;
     }
 
     @Transactional
     @Override
     public void saveEventWithRequest(Event event) {
         eventRepository.save(event);
-    }
-
-    //Добавил в параметры: время и уникальность. "Если проект будет расширяться"
-    private List<Event> getStats(List<Event> events, LocalDateTime start, LocalDateTime end, Boolean unique) {
-        Map<Long, String> eventsUri = events.stream()
-                .collect(Collectors.toMap(
-                        Event::getId,
-                        e -> "/events/" + e.getId()
-                ));
-        LocalDateTime rangeStart = Objects.requireNonNullElseGet(start, () ->
-                LocalDateTime.of(2025, 1, 1, 1, 1, 1));
-        LocalDateTime rangeEnd = Objects.requireNonNullElseGet(end, () ->
-                LocalDateTime.of(2050, 1, 1, 1, 1, 1));
-        Boolean uni = Objects.requireNonNullElseGet(unique, () -> false);
-
-        List<StatDto> statDtos = statsClient.getStats(rangeStart, rangeEnd, eventsUri.values().stream().toList(), uni);
-
-        Map<Long, StatDto> statDtoMap = statDtos.stream()
-                .filter(stat -> stat.getUri()
-                        .substring(stat.getUri().lastIndexOf("/") + 1).matches("\\d+"))
-                .collect(Collectors.toMap(
-                        stat -> Long.parseLong(stat.getUri().substring(stat.getUri().lastIndexOf("/") + 1)),
-                        stat -> stat
-                ));
-        for (Event event : events) {
-            StatDto view = statDtoMap.get(event.getId());
-            event.setViews(view != null ? view.getHits() : 0L);
-        }
-        return List.copyOf(events);
-    }
-
-    private void addViewEvent(HttpServletRequest httpServletRequest) {
-        statsClient.addHit(HitDto.builder()
-                .app("ewm-main-service")
-                .uri(httpServletRequest.getRequestURI())
-                .ip(httpServletRequest.getRemoteAddr())
-                .build());
     }
 }

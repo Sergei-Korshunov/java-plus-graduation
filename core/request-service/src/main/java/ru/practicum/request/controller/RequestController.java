@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users/{userId}/requests")
 @Validated
-public class RequestController implements PublicRequestClient {
+public class RequestController implements PublicRequestClient{
 
     private final RequestService requestService;
 

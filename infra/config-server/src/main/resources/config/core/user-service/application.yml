@@ -29,6 +29,7 @@ resilience4j:
 
 logging:
   level:
+    ru.practicum.user: TRACE
     org.springframework.orm.jpa: INFO
     org.springframework.transaction: INFO
     org.springframework.transaction.interceptor: TRACE

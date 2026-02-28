@@ -6,9 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.interactionapi.event.event.dto.EventFullDto;
 import ru.practicum.interactionapi.event.event.dto.EventShortDto;
 
@@ -31,6 +29,14 @@ public interface PublicEventClient {
                                                 HttpServletRequest request) throws FeignException;
 
     @GetMapping("/{eventId}")
-    EventFullDto findPublicEventById(@PathVariable @Positive @NotNull Long eventId,
-                                     HttpServletRequest request) throws FeignException;
+    EventFullDto findPublicEventById(@RequestHeader("X-EWM-USER-ID") long userId, @PathVariable @Positive @NotNull Long eventId)
+            throws FeignException;
+
+    @GetMapping("/recommendations")
+    List<EventFullDto> getEventsRecommendations(@RequestHeader("X-EWM-USER-ID") long userId,
+                                                @RequestParam(defaultValue = "10") int maxResults) throws FeignException;
+
+    @PutMapping("{eventId}/like")
+    void addLike(@RequestHeader("X-EWM-USER-ID") long userId,
+                 @PathVariable @Positive @NotNull Long eventId) throws FeignException;
 }

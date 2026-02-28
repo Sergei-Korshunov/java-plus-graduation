@@ -33,8 +33,17 @@ resilience4j:
         minimumNumberOfCalls: 5
         automaticTransitionFromOpenToHalfOpenEnabled: true
 
+grpc:
+  client:
+    collector:
+      address: 'discovery:///collector'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+
 logging:
   level:
+    ru.practicum.request: TRACE
     org.springframework.orm.jpa: INFO
     org.springframework.transaction: INFO
     org.springframework.transaction.interceptor: TRACE

@@ -36,7 +36,7 @@ public class RatingServiceImpl implements RatingService {
         }
 
         if (event.getState() != StateEvent.PUBLISHED) {
-            throw new ConflictException("Нельзя голосовать за непубликованное событие");
+            throw new ConflictException("Нельзя голосовать за неопубликованное событие");
         }
 
         EventRating rating = ratingRepository.findByEventIdAndUserId(eventId, userId)

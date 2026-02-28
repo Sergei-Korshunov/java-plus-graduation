@@ -1,6 +1,10 @@
 package ru.practicum.event.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import ru.practicum.event.model.Event;
 import ru.practicum.interactionapi.event.event.dto.*;
 
@@ -26,7 +30,11 @@ public interface EventService {
 
     List<EventShortDto> findEventByParamsPublic(EventPublicParamsDto eventPublicParamsDto, HttpServletRequest request);
 
-    EventFullDto findPublicEventById(Long eventId, HttpServletRequest request);
+    EventFullDto findPublicEventById(long userId, Long eventId);
+
+    List<EventFullDto> getEventsRecommendations(long userId, int maxResults);
+
+    void addLike(long userId, Long eventId);
 
     Event findEventWithOutDto(Long userId, Long eventId);
 

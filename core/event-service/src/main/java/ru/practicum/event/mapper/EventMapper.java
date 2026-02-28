@@ -28,7 +28,7 @@ public interface EventMapper {
         event.createdOn(LocalDateTime.now());
         event.state(StateEvent.PENDING);
         event.confirmedRequests(0L);
-        event.views(0L);
+        // event.views(0L);
     }
 
     @Mapping(source = "event.initiatorId", target = "initiator.id")
