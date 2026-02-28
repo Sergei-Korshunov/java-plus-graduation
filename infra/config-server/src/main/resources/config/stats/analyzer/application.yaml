@@ -29,7 +29,7 @@ analyzer:
           bootstrap-servers: localhost:9092
           key-deserializer-class: org.apache.kafka.common.serialization.LongDeserializer
           value-deserializer-class: ru.practicum.avro.deserializer.UserActionDeserializer
-          group-id: UserActionGroup
+          group-id: UserActionGroup.Analyzer
           client-id: UserActionClient
           enable-auto-commit: false
           poll-timeout: 1000

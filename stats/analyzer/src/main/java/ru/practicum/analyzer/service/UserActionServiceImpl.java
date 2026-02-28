@@ -9,6 +9,7 @@ import ru.practicum.analyzer.model.UserAction;
 import ru.practicum.analyzer.repository.UserActionRepository;
 import ru.practicum.analyzer.service.interfaces.UserActionService;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
+import ru.practicum.util.Json;
 
 @Slf4j
 @Service
@@ -36,15 +37,21 @@ public class UserActionServiceImpl implements UserActionService {
     public void update(UserActionAvro userActionAvro) {
         Long eventId = userActionAvro.getEventId();
         Long userId = userActionAvro.getUserId();
-        Double newActionMark = getMark(userActionAvro);
+        Double newMark = getMark(userActionAvro);
 
         if (!userActionRepository.existsByEventIdAndUserId(eventId, userId)) {
-            userActionRepository.save(userActionMapper.toUserAction(userActionAvro));
+            UserAction userAction = userActionMapper.toUserAction(userActionAvro);
+
+            log.info("Действие пользователя сохранены с новыми данными {}", Json.simpleObjectToJson(userAction));
+            userActionRepository.save(userAction);
         } else {
             UserAction userAction = userActionRepository.findByEventIdAndUserId(eventId, userId);
-            if (userAction.getMark() < newActionMark) {
-                userAction.setMark(newActionMark);
+            if (userAction.getMark() < newMark) {
+                userAction.setMark(newMark);
                 userAction.setTimestamp(userActionAvro.getTimestamp());
+
+                log.info("Действие пользователя дополнены новыми данными {}", Json.simpleObjectToJson(userAction));
+                userActionRepository.save(userAction);
             }
         }
     }

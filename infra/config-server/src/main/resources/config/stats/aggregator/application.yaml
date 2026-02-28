@@ -16,13 +16,12 @@ aggregator:
         bootstrap-servers: localhost:9092
         key-deserializer-class: org.apache.kafka.common.serialization.LongDeserializer
         value-deserializer-class: ru.practicum.avro.deserializer.UserActionDeserializer
-        group-id: UserActionGroup
+        group-id: UserActionGroup.Aggregator
         client-id: UserActionClient
         enable-auto-commit: false
         poll-timeout: 1000
       topic:
         user-action: stats.user-actions.v1
-
   weights:
     view: 0.4
     register: 0.8
